@@ -22,9 +22,13 @@ configureCaching() {
       const r = res[name];
       if(r.Type === "AWS::ApiGateway::Method") {
         const parameters = this.getResourcePath(res, r.Properties.ResourceId);
-        parameters.forEach(p => {
-          r.Properties.RequestParameters[p] = true;
-        });
+        if(parameters.length) {
+          parameters.forEach(p => {
+            r.Properties.RequestParameters[p] = true;
+          });
+          r.Properties.Integration.CacheKeyParameters = _.union(r.Properties.Integration.CacheKeyParameters, parameters);
+          r.Properties.Integration.CacheNamespace = r.Properties.ResourceId;
+        }
       }
     }
   }
