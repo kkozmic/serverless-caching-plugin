@@ -18,6 +18,13 @@ configureCaching() {
     this.serverless.cli.log('Configuring API Gatway caching…');
 
     const res = this.serverless.service.provider.compiledCloudFormationTemplate.Resources;
+    if (this.serverless.service.custom.stageDescription)
+    {
+      this.addConditionForInitialDeploy(this.serverless.service.provider.compiledCloudFormationTemplate); 
+      this.addStageDescriptionConditionally(res, this.serverless.service.custom.stageDescription);
+    }
+
+
     for(var name in res) {
       const r = res[name];
       if(r.Type === "AWS::ApiGateway::Method") {
@@ -48,6 +55,35 @@ configureCaching() {
     }
     if(res.Properties.ParentId && res.Properties.ParentId.Ref) {
       this.addParameter(parameters, resources[res.Properties.ParentId.Ref], resources);
+    }
+  }
+
+  addConditionForInitialDeploy(cf) {
+    if(!cf.Parameters) {
+      cf.Parameters = {}
+    }
+    cf.Parameters.InitialDeploy = {
+      Type: "String",
+      Default: "false"
+    };
+    if(!cf.Conditions) {
+      cf.Conditions = {}
+    }
+    cf.Conditions.CheckInitial = {
+       "Fn::Equals": [
+          {"Ref": "InitialDeploy"},
+          "true"
+       ]
+    }
+  }
+
+  addStageDescriptionConditionally(res, stageDescription) {
+    const deployment = _.find(res, r => r.Type === "AWS::ApiGateway::Deployment");
+    deployment.Properties.StageDescription = {
+      "Fn::If": [
+        "CheckInitial", 
+        stageDescription, 
+        {"Ref" : "AWS::NoValue"}]
     }
   }
 }
