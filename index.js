@@ -1,6 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
 const paramRegex = /^{(.+)}$/
 
 class AWSCachingPlugin {
@@ -26,7 +25,7 @@ configureCaching() {
           parameters.forEach(p => {
             r.Properties.RequestParameters[p] = true;
           });
-          r.Properties.Integration.CacheKeyParameters = _.union(r.Properties.Integration.CacheKeyParameters, parameters);
+          r.Properties.Integration.CacheKeyParameters = parameters;
           r.Properties.Integration.CacheNamespace = r.Properties.ResourceId;
         }
       }
