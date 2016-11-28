@@ -20,33 +20,38 @@ configureCaching() {
     for(var name in res) {
       const r = res[name];
       if(r.Type === "AWS::ApiGateway::Method") {
-        const parameters = this.getResourcePath(res, r.Properties.ResourceId);
-        if(parameters.length) {
-          parameters.forEach(p => {
+        const parameters = this.getCacheParameters(res, r);
+        if(parameters.all.length) {
+          parameters.path.forEach(p => {
             r.Properties.RequestParameters[p] = true;
           });
-          r.Properties.Integration.CacheKeyParameters = parameters;
+          r.Properties.Integration.CacheKeyParameters = parameters.all;
           r.Properties.Integration.CacheNamespace = r.Properties.ResourceId;
         }
       }
     }
   }
 
-  getResourcePath(resources, resourceId) {
+  getCacheParameters(resources, resource) {
+    var request = Object.keys(resource.Properties.RequestParameters);
     var parameters = [];
-    const res = resources[resourceId.Ref];
-    this.addParameter(parameters, res, resources);
-    return parameters;
+    const res = resources[resource.Properties.ResourceId.Ref];
+    this.addPathParameter(parameters, res, resources);
+    return {
+      request: request,
+      path: parameters,
+      all: request.concat(parameters)
+    };
   }
 
-  addParameter(parameters, res, resources) {
+  addPathParameter(parameters, res, resources) {
     const result = paramRegex.exec(res.Properties.PathPart);
 
     if(result && result.length) {
       parameters.push("method.request.path." + result[1]);
     }
     if(res.Properties.ParentId && res.Properties.ParentId.Ref) {
-      this.addParameter(parameters, resources[res.Properties.ParentId.Ref], resources);
+      this.addPathParameter(parameters, resources[res.Properties.ParentId.Ref], resources);
     }
   }
 }
