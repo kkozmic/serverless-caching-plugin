@@ -1,11 +1,15 @@
 {
-  "name": "serverless-caching-plugin",
-  "version": "1.0.5",
+  "name": "serverless-opinionated-plugin",
+  "version": "2.0.5",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "author": "Krzysztof Kozmic",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "lodash": "^4.17.4"
   },
-  "author": "",
-  "license": "ISC"
+  "devDependencies": {
+    "eslint": "^3.19.0"
+  }
 }
